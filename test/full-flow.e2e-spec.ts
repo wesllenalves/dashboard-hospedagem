@@ -11,6 +11,9 @@ describe('Full Flow (e2e)', () => {
   let paymentId: number;
   let scheduleId: number;
   let messageId: number;
+  let userId: number;
+
+  const uniqueEmail = `test+${Date.now()}@e2e.com`;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -22,14 +25,16 @@ describe('Full Flow (e2e)', () => {
   });
 
   it('deve criar um usuário e fazer login', async () => {
-    await request(app.getHttpServer())
+    const resUser = await request(app.getHttpServer())
       .post('/users')
-      .send({ email: 'test@e2e.com', password: '123456', name: 'Test' })
+      .send({ email: uniqueEmail, password: '123456', name: 'Test' })
       .expect(201);
+
+    userId = resUser.body.id; 
 
     const res = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'test@e2e.com', password: '123456' })
+      .send({ email: uniqueEmail, password: '123456' })
       .expect(201);
 
     expect(res.body.access_token).toBeDefined();
@@ -133,6 +138,38 @@ describe('Full Flow (e2e)', () => {
   });
 
   afterAll(async () => {
+    // Remove na ordem inversa de criação para evitar erros de FK
+    if (messageId) {
+      await request(app.getHttpServer())
+        .delete(`/messages/${messageId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    if (scheduleId) {
+      await request(app.getHttpServer())
+        .delete(`/schedules/${scheduleId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    if (paymentId) {
+      await request(app.getHttpServer())
+        .delete(`/payments/${paymentId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    if (stayId) {
+      await request(app.getHttpServer())
+        .delete(`/stays/${stayId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    if (hostingId) {
+      await request(app.getHttpServer())
+        .delete(`/hostings/${hostingId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    // Por último, delete o usuário usando o ID correto
+    if (userId) {
+      await request(app.getHttpServer())
+        .delete(`/users/${userId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
     await app.close();
   });
 });
