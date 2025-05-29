@@ -9,11 +9,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard) // <-- Adicione aqui para proteger todos os endpoints deste controller
+
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   @ApiOperation({ summary: 'Retorna o perfil do usuário autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil do usuário retornado com sucesso' })
@@ -28,12 +29,14 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Lista todos os usuários' })
   findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Busca um usuário pelo ID' })
   @ApiParam({ name: 'id', type: Number })
@@ -41,6 +44,7 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um usuário pelo ID' })
   @ApiParam({ name: 'id', type: Number })
@@ -48,6 +52,7 @@ export class UsersController {
     return this.usersService.update(+id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um usuário pelo ID' })
   @ApiParam({ name: 'id', type: Number })

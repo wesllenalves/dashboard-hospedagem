@@ -1,27 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsDateString, IsOptional, IsBoolean } from 'class-validator';
+import { IsInt, IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateHostingDto {
   @ApiProperty({ example: 1 })
   @IsInt()
   userId: number;
 
-  @ApiProperty({ example: 'meudominio.com' })
+  @ApiProperty({ example: 'Apartamento Central' })
   @IsString()
-  domainName: string;
+  title: string;
 
-  @ApiProperty({ example: 'basic' })
-  @IsString()
-  plan: string;
-
-  @ApiProperty({ example: '2024-06-01T00:00:00Z' })
-  @IsDateString()
-  startDate: string;
-
-  @ApiProperty({ example: '2025-06-01T00:00:00Z', required: false })
+  @ApiProperty({ example: 'Apartamento confortável no centro.' })
   @IsOptional()
-  @IsDateString()
-  endDate?: string;
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ example: 'Rua das Flores, 123' })
+  @IsString()
+  address: string;
+
+  @ApiProperty({ example: 'apartamento' })
+  @IsString()
+  type: string;
+
+  @ApiProperty({ example: 2 })
+  @IsInt()
+  rooms: number;
+
+  @ApiProperty({ example: 1500.0 })
+  @IsNumber()
+  rentValue: number;
 
   @ApiProperty({ example: true, required: false })
   @IsOptional()
