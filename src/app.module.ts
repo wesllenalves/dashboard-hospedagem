@@ -10,9 +10,27 @@ import { PaymentsModule } from './payments/payments.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { MessagesModule } from './messages/messages.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AvailabilityModule } from './availability/availability.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { PricesModule } from './prices/prices.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, HostingsModule, PrismaModule, StaysModule, PaymentsModule, SchedulesModule, MessagesModule, DashboardModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    HostingsModule, 
+    PrismaModule, 
+    StaysModule, 
+    PaymentsModule, 
+    SchedulesModule, 
+    MessagesModule, 
+    DashboardModule, 
+    AvailabilityModule, 
+    ReviewsModule, 
+    PricesModule, 
+    ReportsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

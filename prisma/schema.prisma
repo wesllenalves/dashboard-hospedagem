@@ -34,11 +34,14 @@ model Hosting {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  houseRules String?
 
   stays       Stay[]
   payments    Payment[]
   schedules   Schedule[]
   messages    Message[]
+  availability  Availability[]  // <--- Adicione esta linha
+  prices        Price[]         // <--- Adicione esta linha
 }
 
 model Stay {
@@ -51,6 +54,8 @@ model Stay {
   checkOut    DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  reviews     Review[]
 }
 
 model Payment {
@@ -88,4 +93,29 @@ model Message {
   status      String   // enviado, erro
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  stayId     Int
+  stay       Stay     @relation(fields: [stayId], references: [id])
+  rating     Int      // 1 a 5
+  comment    String?
+  createdAt  DateTime @default(now())
+}
+
+model Availability {
+  id         Int      @id @default(autoincrement())
+  hostingId  Int
+  hosting    Hosting  @relation(fields: [hostingId], references: [id])
+  date       DateTime
+  status     String   // disponível, ocupado, bloqueado
+}
+
+model Price {
+  id         Int      @id @default(autoincrement())
+  hostingId  Int
+  hosting    Hosting  @relation(fields: [hostingId], references: [id])
+  date       DateTime
+  value      Float
 }

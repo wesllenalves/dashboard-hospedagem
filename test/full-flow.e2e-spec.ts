@@ -12,6 +12,9 @@ describe('Full Flow (e2e)', () => {
   let scheduleId: number;
   let messageId: number;
   let userId: number;
+  let reviewId: number;
+  let availabilityId: number;
+  let priceId: number;
 
   const uniqueEmail = `test+${Date.now()}@e2e.com`;
 
@@ -137,8 +140,106 @@ describe('Full Flow (e2e)', () => {
     expect(res.body.totalSchedules).toBeGreaterThan(0);
   });
 
+  it('deve criar uma disponibilidade', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/availability')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        hostingId,
+        date: new Date().toISOString(),
+        status: 'disponível',
+      })
+      .expect(201);
+
+    expect(res.body.id).toBeDefined();
+    availabilityId = res.body.id;
+  });
+
+  it('deve criar um preço dinâmico', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/prices')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        hostingId,
+        date: new Date().toISOString(),
+        value: 300.0,
+      })
+      .expect(201);
+
+    expect(res.body.id).toBeDefined();
+    priceId = res.body.id;
+  });
+
+  it('deve criar uma avaliação', async () => {
+    // Primeiro, cria uma estadia para associar a avaliação
+    const stayRes = await request(app.getHttpServer())
+      .post('/stays')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        hostingId,
+        guestName: 'Hóspede Avaliação',
+        checkIn: new Date().toISOString(),
+        checkOut: new Date(Date.now() + 86400000).toISOString(),
+      })
+      .expect(201);
+
+    const stayReviewId = stayRes.body.id;
+
+    const res = await request(app.getHttpServer())
+      .post('/reviews')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        stayId: stayReviewId,
+        rating: 5,
+        comment: 'Excelente!',
+      })
+      .expect(201);
+
+    expect(res.body.id).toBeDefined();
+    reviewId = res.body.id;
+
+  });
+
   afterAll(async () => {
-    // Remove na ordem inversa de criação para evitar erros de FK
+    if (hostingId) {
+      const staysRes = await request(app.getHttpServer())
+        .get('/stays')
+        .set('Authorization', `Bearer ${jwt}`);
+      const stays = staysRes.body.filter(s => s.hostingId === hostingId);
+
+      for (const stay of stays) {
+        const reviewsRes = await request(app.getHttpServer())
+          .get('/reviews')
+          .set('Authorization', `Bearer ${jwt}`);
+        const reviews = reviewsRes.body.filter(r => r.stayId === stay.id);
+        for (const review of reviews) {
+          await request(app.getHttpServer())
+            .delete(`/reviews/${review.id}`)
+            .set('Authorization', `Bearer ${jwt}`);
+        }
+      }
+
+      // Aguarde um pequeno tempo para garantir que as deleções sejam processadas
+      await new Promise(res => setTimeout(res, 200));
+
+      for (const stay of stays) {
+        await request(app.getHttpServer())
+          .delete(`/stays/${stay.id}`)
+          .set('Authorization', `Bearer ${jwt}`);
+      }
+    }
+
+    // 4. Demais deleções (availability, price, message, schedule, payment)
+    if (availabilityId) {
+      await request(app.getHttpServer())
+        .delete(`/availability/${availabilityId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
+    if (priceId) {
+      await request(app.getHttpServer())
+        .delete(`/prices/${priceId}`)
+        .set('Authorization', `Bearer ${jwt}`);
+    }
     if (messageId) {
       await request(app.getHttpServer())
         .delete(`/messages/${messageId}`)
@@ -154,22 +255,21 @@ describe('Full Flow (e2e)', () => {
         .delete(`/payments/${paymentId}`)
         .set('Authorization', `Bearer ${jwt}`);
     }
-    if (stayId) {
-      await request(app.getHttpServer())
-        .delete(`/stays/${stayId}`)
-        .set('Authorization', `Bearer ${jwt}`);
-    }
+
+    // 5. Agora pode deletar a hospedagem
     if (hostingId) {
       await request(app.getHttpServer())
         .delete(`/hostings/${hostingId}`)
         .set('Authorization', `Bearer ${jwt}`);
     }
-    // Por último, delete o usuário usando o ID correto
+
+    // 6. Por último, delete o usuário
     if (userId) {
       await request(app.getHttpServer())
         .delete(`/users/${userId}`)
         .set('Authorization', `Bearer ${jwt}`);
     }
+
     await app.close();
   });
 });
