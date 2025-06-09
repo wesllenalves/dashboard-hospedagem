@@ -1,7 +1,7 @@
 # Dependencies
-/node_modules
-/dist
-/coverage
+node_modules/
+dist/
+coverage/
 
 # IDE files
 .idea/
@@ -23,19 +23,15 @@ yarn-error.log*
 .env.production
 
 # Prisma
-/prisma/*
-!/prisma/schema.prisma
-/prisma/dev.db
-/prisma/dev.db-journal
-/prisma/migrations/*
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/prisma/migrations/
 
 # NestJS
 .nest/
 *.js.map
 *.d.ts
-!src/**/*.d.ts # Keep these ones
-!test/**/*.d.ts # Keep these ones
-
-/generated/prisma
+!backend/src/**/*.d.ts
+!backend/test/**/*.d.ts
 
 /generated/prisma
