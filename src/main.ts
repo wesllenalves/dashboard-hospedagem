@@ -22,9 +22,10 @@ async function bootstrap() {
   // Enable shutdown hooks to gracefully handle termination signals
   app.enableShutdownHooks();
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
 
-  console.log(`🚀 Aplicação iniciada em: http://127.0.0.1:${process.env.PORT}`);
-  console.log(`📚 Documentação Swagger: http://127.0.0.1:${process.env.PORT}/api/docs`);
+  console.log(`🚀 Aplicação iniciada em: http://127.0.0.1:${port}`);
+  console.log(`📚 Documentação Swagger: http://127.0.0.1:${port}/api/docs`);
 }
 bootstrap();
